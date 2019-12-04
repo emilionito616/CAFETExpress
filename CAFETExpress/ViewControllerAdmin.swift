@@ -9,9 +9,13 @@
 import UIKit
 import SQLite3
 
-class ViewControllerAdmin: UIViewController {
+class ViewControllerAdmin: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     var producto = [Productos]()
     var db: OpaquePointer?
+    
+    @IBOutlet weak var imgVIew: UIImageView!
+    
+    let imagePicker = UIImagePickerController()
     
     @IBOutlet weak var txtBuscar: UITextField!
     
@@ -25,9 +29,40 @@ class ViewControllerAdmin: UIViewController {
     
     
     @IBAction func btnBuscar(_ sender: UIButton) {
+        let fileURL = try! FileManager.default.url(for:.documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false) .appendingPathComponent ("CafeDatabase.sqlite")
+        if sqlite3_open(fileURL.path, &db) != SQLITE_OK
+        {
+            showAlert(Titulo: "basedatos", Mensaje: "Error al abrir base de datos")
+            
+        }
+        
+        producto.removeAll()
+        let query = "SELECT idProducto, nomProducto, precio, cantidad, tiempo FROM Productos"
+        var stmt: OpaquePointer?
+        if (sqlite3_prepare(db, query, -1, &stmt, nil) != SQLITE_OK){
+            let errmsg = String(cString: sqlite3_errmsg(db)!)
+            showAlert(Titulo: "Error consultar", Mensaje: errmsg)
+            return
+        }
+        while (sqlite3_step(stmt) == SQLITE_ROW){
+            txtNomProd.text = String (cString: sqlite3_column_text(stmt, 1))
+            txtPrecio.text = String (sqlite3_column_double(stmt, 2))
+            txtCnatidad.text = String (sqlite3_column_int(stmt, 3))
+            txtTiempo.text = String (sqlite3_column_int(stmt, 4))
+        }
     }
     
     @IBAction func btnCargar(_ sender: UIButton) {
+        imagePicker.allowsEditing = false
+        imagePicker.sourceType = .photoLibrary
+        
+        self.present(imagePicker, animated: true, completion: nil)
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        let img = info[UIImagePickerController.InfoKey.originalImage] as? UIImage
+        imgVIew?.image = img
+        self.dismiss(animated: true, completion: nil)
     }
     
     @IBAction func btnAgregar(_ sender: UIButton) {
@@ -71,7 +106,7 @@ class ViewControllerAdmin: UIViewController {
             sqlite3_bind_int(stmt, 4, tiem)
         }
         if sqlite3_step(stmt) != SQLITE_DONE{
-            let errmsg = String(cString: sqlite3_errmsg(db)!)
+            //let errmsg = String(cString: sqlite3_errmsg(db)!)
             showAlert(Titulo: "Error Insertar", Mensaje: "Error al agregar un producto")
             return
         }
@@ -79,9 +114,11 @@ class ViewControllerAdmin: UIViewController {
     }
     
     @IBAction func btnModificar(_ sender: UIButton) {
+        
     }
     
     @IBAction func btnEliminar(_ sender: UIButton) {
+
     }
     
     @IBAction func btnMenu(_ sender: UIButton) {
@@ -112,6 +149,8 @@ class ViewControllerAdmin: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        imagePicker.delegate = self
         
     }
     

@@ -31,7 +31,7 @@ class TableViewControllerProd: UITableViewController {
             return
         }
         while (sqlite3_step(stmt) == SQLITE_ROW){
-            let idp = String(sqlite3_column_int(stmt, 0))
+            let idp = String (sqlite3_column_int(stmt, 0))
             let nom = String (cString: sqlite3_column_text(stmt, 1))
             let pre = String (sqlite3_column_double(stmt, 2))
             let can = String (sqlite3_column_int(stmt, 3))
@@ -40,24 +40,22 @@ class TableViewControllerProd: UITableViewController {
             producto.append(Productos(idProd: idp, nomprod:nom, prec:pre, exist:can, tiem:tie))
         }
     }
-
+    
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+    }
+    
+    
     override func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
         return 1
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of rows
+        
         return producto.count
     }
-
-    func showAlert(Titulo: String, Mensaje: String){
-        let alert = UIAlertController(title: Titulo, message: Mensaje, preferredStyle: UIAlertController.Style.alert)
-        alert.addAction(UIAlertAction(title: "Aceptar", style: UIAlertAction.Style.default, handler: nil))
-        self.present(alert,animated: true, completion: nil)
-        
-    }
-
+    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as! TableViewCellProd
         let Prod: Productos
@@ -67,10 +65,32 @@ class TableViewControllerProd: UITableViewController {
         cell.lblExist.text = Prod.existencia
         cell.lblPrec.text = Prod.precio
         
-        
         return cell
     }
 
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
+        performSegue(withIdentifier: "segueDetalle", sender: self)
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "segueDetalle"{
+            let indexPaths = self.tableView.indexPathsForSelectedRows!
+            let indexPath = indexPaths[0] as NSIndexPath
+            let vc = segue.destination as! ViewControllerDetalle
+            vc.codCom = producto[indexPath.row].idProducto
+            vc.nomCom = producto[indexPath.row].nomProducto
+            vc.precio = producto[indexPath.row].precio
+        }
+ 
+        
+    }
+    
+    func showAlert(Titulo: String, Mensaje: String){
+        let alert = UIAlertController(title: Titulo, message: Mensaje, preferredStyle: UIAlertController.Style.alert)
+        alert.addAction(UIAlertAction(title: "Aceptar", style: UIAlertAction.Style.default, handler: nil))
+        self.present(alert,animated: true, completion: nil)
+        
+    }
 
     /*
     // Override to support conditional editing of the table view.
@@ -118,3 +138,4 @@ class TableViewControllerProd: UITableViewController {
     */
 
 }
+

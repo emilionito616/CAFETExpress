@@ -17,14 +17,16 @@ class ViewController: UIViewController {
     @IBOutlet weak var txtPassword: UITextField!
     
     @IBAction func btnSesion(_ sender: UIButton) {
+        
         if (txtNoControl.text?.isEmpty)! || (txtPassword.text?.isEmpty)! {
             showAlert(Titulo: "Error", Mensaje: "Faltan datos")
             txtNoControl.becomeFirstResponder()
-        } else if (txtNoControl.text == "admin") && (txtPassword.text == "hola"){
+        } else if (txtNoControl.text == "admin") && (txtPassword.text == "hola1234"){
             self .performSegue(withIdentifier: "segueAdmin", sender: self)
-        } else {
-            
+        } else if (txtNoControl.text == "16980412") && (txtPassword.text == "123456"){
             self .performSegue(withIdentifier: "segueMenu", sender: self)
+        }else{
+            showAlert(Titulo: "Error", Mensaje: "Usuario o password incorrecto")
         }
     }
     
@@ -47,7 +49,10 @@ class ViewController: UIViewController {
             let errmsg = String(cString: sqlite3_errmsg(db)!)
             showAlert(Titulo:"Error al crear la tabla", Mensaje: errmsg)
         }
-
+        if sqlite3_exec(db, "CREATE TABLE IF NOT EXISTS Pedidos(idPedidos INTEGER PRIMARY KEY AUTOINCREMENT, total DOUBLE,cantidad INTEGER, noControl TEXT, idProducto, FOREIGN KEY(noControl) REFERENCES Usuario(noControl), FOREIGN KEY(idProducto) REFERENCES Productos(idProducto))", nil, nil, nil) != SQLITE_OK{
+            let errmsg = String(cString: sqlite3_errmsg(db)!)
+            showAlert(Titulo:"Error al crear la tabla", Mensaje: errmsg)
+        }
     }
     
     func showAlert(Titulo: String, Mensaje: String){
